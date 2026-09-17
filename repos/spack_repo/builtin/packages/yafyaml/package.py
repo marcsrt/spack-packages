@@ -27,7 +27,7 @@ class Yafyaml(CMakePackage):
 
     maintainers("mathomp4", "tclune")
 
-    license("Apache-2.0")
+    license("Apache-2.0", checked_by="mathomp4")
 
     version("main", branch="main")
 
@@ -93,6 +93,15 @@ class Yafyaml(CMakePackage):
         values=("Debug", "Release"),
     )
     variant("fismahigh", default=False, description="Apply patching for FISMA-high compliance")
+
+    def cmake_args(self):
+        args = []
+        if self.spec.satisfies("%nag"):
+            # NAG's nested linker-argument syntax cannot represent Spack's
+            # padded install-prefix placeholder in an rpath. yaFyaml only
+            # installs static libraries, so it does not need build rpaths.
+            args.append(self.define("CMAKE_SKIP_RPATH", True))
+        return args
 
     @when("+fismahigh")
     def patch(self):
